@@ -1,0 +1,328 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>예산 트래커</title>
+<meta name="theme-color" content="#EEF1F5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="예산">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#EEF1F5;
+    --surface:#FFFFFF;
+    --ink:#11151C;
+    --sub:#69707D;
+    --line:#E3E7ED;
+    --teal:#0E8C72;
+    --teal-soft:#E6F4EF;
+    --amber:#C8791A;
+    --amber-soft:#FBF1E3;
+    --red:#C9412F;
+    --red-soft:#FBEBE8;
+    --radius:20px;
+    --shadow:0 1px 2px rgba(17,21,28,.04), 0 8px 24px rgba(17,21,28,.06);
+    font-family:"Pretendard",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;background:var(--bg);color:var(--ink);}
+  body{padding:18px 16px 48px;max-width:520px;margin:0 auto;-webkit-font-smoothing:antialiased;}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";}
+
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--sub);text-transform:uppercase;}
+  .title-input{
+    width:100%;border:0;background:transparent;font-family:inherit;
+    font-size:25px;font-weight:800;color:var(--ink);padding:4px 0 14px;
+    letter-spacing:-.01em;outline:none;
+  }
+  .title-input::placeholder{color:#AEB4BF;}
+
+  /* HERO */
+  .hero{
+    background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:24px 22px 22px;position:relative;overflow:hidden;
+    border-top:4px solid var(--teal);transition:border-color .25s;
+  }
+  .hero.warn{border-top-color:var(--amber);}
+  .hero.over{border-top-color:var(--red);}
+  .hero-label{font-size:13.5px;font-weight:700;color:var(--sub);display:flex;align-items:center;gap:7px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);transition:background .25s;}
+  .hero.warn .dot{background:var(--amber);}
+  .hero.over .dot{background:var(--red);}
+  .balance{font-size:44px;font-weight:800;letter-spacing:-.025em;margin:8px 0 2px;line-height:1.05;color:var(--teal);transition:color .25s;}
+  .hero.warn .balance{color:var(--amber);}
+  .hero.over .balance{color:var(--red);}
+  .balance-kr{font-size:14px;font-weight:600;color:var(--sub);}
+
+  .bar{height:9px;border-radius:99px;background:#EDF0F4;margin:20px 0 12px;overflow:hidden;}
+  .bar-fill{height:100%;width:0;border-radius:99px;background:var(--teal);transition:width .35s ease, background .25s;}
+  .hero.warn .bar-fill{background:var(--amber);}
+  .hero.over .bar-fill{background:var(--red);}
+  .hero-foot{display:flex;justify-content:space-between;font-size:13px;color:var(--sub);font-weight:600;}
+  .hero-foot b{color:var(--ink);font-weight:700;}
+
+  /* BUDGET card (인원수 기반) */
+  .budget-card{
+    background:var(--surface);border-radius:16px;box-shadow:var(--shadow);
+    padding:16px 18px;margin-top:12px;
+  }
+  .head-line{display:flex;align-items:center;gap:8px;}
+  .head-line label{font-size:14px;font-weight:700;color:var(--sub);white-space:nowrap;}
+  .head-input{
+    border:1.5px solid var(--line);background:#FBFCFD;border-radius:10px;font-family:inherit;
+    text-align:right;font-size:19px;font-weight:800;color:var(--ink);width:88px;outline:none;
+    letter-spacing:-.01em;padding:8px 10px;transition:border-color .15s;
+  }
+  .head-input:focus{border-color:var(--teal);background:#fff;}
+  .head-unit{font-size:14px;font-weight:700;color:var(--sub);white-space:nowrap;}
+  .budget-split{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin-top:14px;padding-top:13px;border-top:1px solid var(--line);
+  }
+  .budget-split .lbl{font-size:14px;font-weight:700;color:var(--sub);}
+  .budget-split .val{font-size:21px;font-weight:800;letter-spacing:-.01em;color:var(--ink);}
+
+  /* ADD form */
+  .add{
+    background:var(--surface);border-radius:16px;box-shadow:var(--shadow);
+    padding:16px;margin-top:20px;
+  }
+  .add input{
+    width:100%;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;
+    font-size:16px;padding:13px 14px;outline:none;color:var(--ink);background:#FBFCFD;
+    transition:border-color .15s;
+  }
+  .add input:focus{border-color:var(--teal);background:#fff;}
+  .add-amt-row{display:flex;gap:10px;margin-top:10px;}
+  .add-amt-row .amt{flex:1;text-align:right;font-weight:700;letter-spacing:-.01em;}
+  .add button{
+    border:0;background:var(--ink);color:#fff;font-family:inherit;font-size:16px;font-weight:700;
+    border-radius:12px;padding:0 22px;cursor:pointer;white-space:nowrap;transition:opacity .15s,transform .05s;
+  }
+  .add button:active{transform:scale(.97);}
+  .add button:disabled{opacity:.35;}
+  .hint{font-size:13px;font-weight:600;color:var(--teal);margin-top:9px;min-height:18px;padding-left:2px;}
+
+  /* LIST */
+  .list-head{display:flex;align-items:baseline;justify-content:space-between;margin:26px 4px 10px;}
+  .list-head h2{font-size:15px;font-weight:800;margin:0;letter-spacing:-.01em;}
+  .list-head .count{font-size:13px;color:var(--sub);font-weight:700;}
+  .list{display:flex;flex-direction:column;gap:8px;}
+  .item{
+    display:flex;align-items:center;gap:12px;background:var(--surface);
+    border-radius:14px;padding:14px 14px 14px 18px;box-shadow:var(--shadow);
+    animation:pop .2s ease;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  .item .name{flex:1;font-size:15.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .item .amt{font-size:16px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;}
+  .item .del{
+    width:32px;height:32px;flex:none;border:0;background:#F2F4F7;border-radius:9px;color:var(--sub);
+    font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:background .15s,color .15s;
+  }
+  .item .del:active{background:var(--red-soft);color:var(--red);}
+  .empty{text-align:center;color:var(--sub);font-size:14px;font-weight:600;padding:34px 20px;
+    background:var(--surface);border-radius:14px;box-shadow:var(--shadow);line-height:1.6;}
+
+  .reset{display:block;margin:24px auto 0;border:0;background:transparent;color:#AEB4BF;
+    font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:8px 14px;}
+  .reset:active{color:var(--red);}
+
+  /* MEMO */
+  .memo-wrap{margin-top:26px;}
+  .memo-label{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 4px 10px;}
+  .memo{
+    width:100%;min-height:96px;resize:vertical;border:1.5px solid var(--line);border-radius:16px;
+    font-family:inherit;font-size:15px;line-height:1.6;color:var(--ink);background:var(--surface);
+    padding:14px 16px;outline:none;box-shadow:var(--shadow);transition:border-color .15s;
+  }
+  .memo:focus{border-color:var(--teal);}
+  .memo::placeholder{color:#AEB4BF;}
+</style>
+
+<div class="eyebrow">현장 예산 트래커</div>
+<input class="title-input" id="eventName" placeholder="행사 이름" maxlength="30">
+
+<div class="hero" id="hero">
+  <div class="hero-label"><span class="dot"></span><span id="balLabel">남은 예산</span></div>
+  <div class="balance num" id="balance">₩0</div>
+  <div class="balance-kr num" id="balanceKr">0원</div>
+  <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+  <div class="hero-foot">
+    <span><b id="pctUsed">0%</b> 사용</span>
+    <span class="num">사용 <b id="spentMini">₩0</b></span>
+  </div>
+</div>
+
+<div class="budget-card">
+  <div class="head-line">
+    <label for="headcount">인원수</label>
+    <input class="head-input num" id="headcount" inputmode="numeric" placeholder="0">
+    <span class="head-unit">명 × 70,000원</span>
+  </div>
+  <div class="budget-split">
+    <span class="lbl">총 예산</span>
+    <span class="val num" id="totalShow">₩0</span>
+  </div>
+</div>
+
+<div class="add">
+  <input id="itemName" placeholder="항목명 (예: 볼링장)" maxlength="24">
+  <div class="add-amt-row">
+    <input class="amt num" id="itemAmt" inputmode="numeric" placeholder="금액">
+    <button id="addBtn" disabled>추가</button>
+  </div>
+  <div class="hint" id="addHint"></div>
+</div>
+
+<div class="list-head">
+  <h2>지출 내역</h2>
+  <span class="count" id="listCount">0건</span>
+</div>
+<div class="list" id="list"></div>
+
+<div class="memo-wrap">
+  <label class="memo-label" for="memo">메모</label>
+  <textarea class="memo" id="memo" placeholder="기타 메모를 남겨두세요 (예: 영수증 보관 위치, 정산 담당, 미정 항목 등)"></textarea>
+</div>
+
+<button class="reset" id="resetBtn">전체 초기화</button>
+
+<script>
+const KEY = "budget:state";
+const RATE = 70000; // 1인당 단가
+let state = { eventName:"", headcount:0, items:[], memo:"" };
+
+const $ = id => document.getElementById(id);
+const wonFmt = n => "₩" + Math.round(n).toLocaleString("ko-KR");
+
+function koreanMoney(n){
+  if(!n) return "0원";
+  const neg = n < 0; n = Math.abs(Math.round(n));
+  const eok = Math.floor(n/100000000); n %= 100000000;
+  const man = Math.floor(n/10000); const won = n % 10000;
+  let p = [];
+  if(eok) p.push(eok.toLocaleString()+"억");
+  if(man) p.push(man.toLocaleString()+"만");
+  if(won) p.push(won.toLocaleString());
+  return (neg?"-":"") + p.join(" ") + "원";
+}
+const digits = s => { const d = (s||"").replace(/[^0-9]/g,""); return d ? parseInt(d,10) : 0; };
+
+// 저장: Claude 안에서는 window.storage, 외부(깃허브 등)에서는 브라우저 자체 저장소 사용
+async function save(){
+  const data = JSON.stringify(state);
+  if(window.storage && window.storage.set){
+    try{ await window.storage.set(KEY, data, false); return; }catch(e){}
+  }
+  try{ localStorage.setItem(KEY, data); }catch(e){ console.error("저장 실패", e); }
+}
+async function load(){
+  let raw = null;
+  if(window.storage && window.storage.get){
+    try{ const r = await window.storage.get(KEY, false); raw = r && r.value ? r.value : null; }catch(e){}
+  }
+  if(raw === null){
+    try{ raw = localStorage.getItem(KEY); }catch(e){}
+  }
+  if(raw){ try{ state = JSON.parse(raw); }catch(e){} }
+}
+
+function render(){
+  const total = (state.headcount || 0) * RATE;
+  const spent = state.items.reduce((s,i)=>s + i.amount, 0);
+  const bal = total - spent;
+  const pct = total > 0 ? Math.min(100, Math.round(spent/total*100)) : 0;
+
+  $("totalShow").textContent = wonFmt(total);
+  $("balance").textContent = (bal<0?"-":"") + wonFmt(Math.abs(bal));
+  $("balanceKr").textContent = koreanMoney(bal);
+  $("spentMini").textContent = wonFmt(spent);
+  $("pctUsed").textContent = pct + "%";
+  $("barFill").style.width = pct + "%";
+  $("balLabel").textContent = bal < 0 ? "예산 초과" : "남은 예산";
+
+  const hero = $("hero");
+  hero.classList.remove("warn","over");
+  if(bal < 0) hero.classList.add("over");
+  else if(total > 0 && bal <= total*0.2) hero.classList.add("warn");
+
+  const list = $("list");
+  $("listCount").textContent = state.items.length + "건";
+  if(state.items.length === 0){
+    list.innerHTML = '<div class="empty">아직 등록한 지출이 없어요.<br>위에서 항목과 금액을 추가해 보세요.</div>';
+  } else {
+    list.innerHTML = "";
+    [...state.items].reverse().forEach(it=>{
+      const row = document.createElement("div");
+      row.className = "item";
+      row.innerHTML = `<span class="name"></span>
+        <span class="amt num">-${wonFmt(it.amount)}</span>
+        <button class="del" aria-label="삭제">×</button>`;
+      row.querySelector(".name").textContent = it.name;
+      row.querySelector(".del").onclick = ()=>{
+        state.items = state.items.filter(x=>x.id !== it.id);
+        save(); render();
+      };
+      list.appendChild(row);
+    });
+  }
+}
+
+// 행사명
+$("eventName").addEventListener("input", e=>{ state.eventName = e.target.value; save(); });
+
+// 인원수 → 총 예산 자동 계산
+$("headcount").addEventListener("input", e=>{
+  const v = digits(e.target.value);
+  state.headcount = v;
+  e.target.value = v ? v.toLocaleString("ko-KR") : "";
+  render(); save();
+});
+
+// 메모
+$("memo").addEventListener("input", e=>{ state.memo = e.target.value; save(); });
+
+// 금액 입력 — 콤마 + 한글 확인 문구
+function updateAddHint(){
+  const amt = digits($("itemAmt").value);
+  $("addHint").textContent = amt ? "= " + koreanMoney(amt) : "";
+  $("addBtn").disabled = !($("itemName").value.trim() && amt > 0);
+}
+$("itemAmt").addEventListener("input", e=>{
+  const v = digits(e.target.value);
+  e.target.value = v ? v.toLocaleString("ko-KR") : "";
+  updateAddHint();
+});
+$("itemName").addEventListener("input", updateAddHint);
+
+function addItem(){
+  const name = $("itemName").value.trim();
+  const amt = digits($("itemAmt").value);
+  if(!name || amt <= 0) return;
+  state.items.push({ id: Date.now()+""+Math.random().toString(36).slice(2,6), name, amount: amt });
+  $("itemName").value = ""; $("itemAmt").value = ""; $("addHint").textContent = "";
+  $("addBtn").disabled = true;
+  save(); render();
+  $("itemName").focus();
+}
+$("addBtn").onclick = addItem;
+$("itemAmt").addEventListener("keydown", e=>{ if(e.key==="Enter") addItem(); });
+$("itemName").addEventListener("keydown", e=>{ if(e.key==="Enter") $("itemAmt").focus(); });
+
+$("resetBtn").onclick = ()=>{
+  if(confirm("모든 항목과 예산을 지울까요? 되돌릴 수 없어요.")){
+    state = { eventName:"", headcount:0, items:[], memo:"" };
+    $("eventName").value = ""; $("headcount").value = ""; $("memo").value = "";
+    save(); render();
+  }
+};
+
+(async ()=>{
+  await load();
+  $("eventName").value = state.eventName || "";
+  $("headcount").value = state.headcount ? state.headcount.toLocaleString("ko-KR") : "";
+  $("memo").value = state.memo || "";
+  render();
+})();
+</script>
