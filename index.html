@@ -28,7 +28,10 @@
   body{padding:18px 16px 48px;max-width:520px;margin:0 auto;-webkit-font-smoothing:antialiased;}
   .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";}
 
+  .topbar{display:flex;align-items:center;justify-content:space-between;}
   .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--sub);text-transform:uppercase;}
+  .credit{font-size:12px;font-weight:600;color:#9AA1AC;letter-spacing:.02em;white-space:nowrap;}
+  .credit b{font-weight:800;color:var(--teal);}
   .title-input{
     width:100%;border:0;background:transparent;font-family:inherit;
     font-size:25px;font-weight:800;color:var(--ink);padding:4px 0 14px;
@@ -140,7 +143,10 @@
   .memo::placeholder{color:#AEB4BF;}
 </style>
 
-<div class="eyebrow">현장 예산 트래커</div>
+<div class="topbar">
+  <span class="eyebrow">현장 예산 트래커</span>
+  <span class="credit">made by <b>KITA</b></span>
+</div>
 <input class="title-input" id="eventName" placeholder="행사 이름" maxlength="30">
 
 <div class="hero" id="hero">
